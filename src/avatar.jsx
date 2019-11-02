@@ -182,7 +182,7 @@ class Avatar extends React.Component {
 
     let reader = new FileReader();
     let file = e.target.files[0];
-    
+
     this.onFileLoadCallback(file);
 
     const image = new Image();
@@ -279,6 +279,7 @@ class Avatar extends React.Component {
     };
 
     const getPreview = () => crop.toDataURL({
+      mimeType: "image/jpeg",
       x: crop.x() - crop.radius(),
       y: crop.y() - crop.radius(),
       width: crop.radius() * 2,
