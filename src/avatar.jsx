@@ -1,11 +1,13 @@
-import React from 'react'
-import Konva from 'konva/src/Core'
-import 'konva/src/shapes/Image'
-import 'konva/src/shapes/Circle'
-import 'konva/src/shapes/Rect'
-import 'konva/src/shapes/Path'
+import LoadImage from 'blueimp-load-image'
+import EXIF from 'exif-js'
 import 'konva/src/Animation'
+import Konva from 'konva/src/Core'
 import 'konva/src/DragAndDrop'
+import 'konva/src/shapes/Circle'
+import 'konva/src/shapes/Image'
+import 'konva/src/shapes/Path'
+import 'konva/src/shapes/Rect'
+import React from 'react'
 
 class Avatar extends React.Component {
 
@@ -18,6 +20,10 @@ class Avatar extends React.Component {
     minCropRadius: 30,
     backgroundColor: 'grey',
     mimeTypes: 'image/jpeg,image/png',
+    exportAsSquare: false,
+    exportSize: undefined,
+    exportMimeType: 'image/png',
+    exportQuality: 1.0,
     mobileScaleSpeed: 0.5, // experimental
     onClose: () => {
     },
@@ -180,22 +186,22 @@ class Avatar extends React.Component {
     this.onBeforeFileLoadCallback(e);
     if(!e.target.value) return;
 
-    let reader = new FileReader();
     let file = e.target.files[0];
 
     this.onFileLoadCallback(file);
 
-    const image = new Image();
     const ref = this;
-    reader.onloadend = () => {
-      image.src = reader.result;
-
-      ref.setState({ image, file, showLoader: false }, () => {
-        if (ref.image.complete) return ref.init();
-        ref.image.onload = () => ref.init()
-      })
-    };
-    reader.readAsDataURL(file)
+    EXIF.getData(file, function() {
+      let exifOrientation = EXIF.getTag(this, "Orientation");
+      LoadImage(
+        file,
+        function (image, data) {
+          ref.setState({ image, file, showLoader: false});
+          ref.init();
+        },
+        {orientation: exifOrientation, meta: true}
+      );
+    })
   }
 
   onCloseClick() {
@@ -278,13 +284,37 @@ class Avatar extends React.Component {
       resizeIcon.y(calcResizerY(y) - 10)
     };
 
-    const getPreview = () => crop.toDataURL({
-      mimeType: "image/jpeg",
-      x: crop.x() - crop.radius(),
-      y: crop.y() - crop.radius(),
-      width: crop.radius() * 2,
-      height: crop.radius() * 2
-    });
+    const getPreview = () => {
+      if(this.props.exportAsSquare) {
+        const fullSizeImage = new Konva.Image({ image: this.image });
+        const xScale = fullSizeImage.width() / background.width();
+        const yScale = fullSizeImage.height() / background.height();
+
+        const width = crop.radius() * 2 * xScale;
+        const height = crop.radius() * 2 * yScale;
+
+        const pixelRatio = this.props.exportSize ? this.props.exportSize / width : undefined;
+
+        return fullSizeImage.toDataURL({
+          x: (crop.x() - crop.radius()) * xScale,
+          y: (crop.y() - crop.radius())  * yScale,
+          width,
+          height,
+          pixelRatio,
+          mimeType: this.props.exportMimeType,
+          quality: this.props.exportQuality
+        });
+      } else {
+        return crop.toDataURL({
+          x: crop.x() - crop.radius(),
+          y: crop.y() - crop.radius(),
+          width: crop.radius() * 2,
+          height: crop.radius() * 2,
+          mimeType: this.props.exportMimeType,
+          quality: this.props.exportQuality
+        });
+      }
+    };
 
     const onScaleCallback = (scaleY) => {
       const scale = scaleY > 0 || isNotOutOfScale(scaleY) ? scaleY : 0;
