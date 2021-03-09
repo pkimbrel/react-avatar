@@ -1,7 +1,7 @@
 import LoadImage from 'blueimp-load-image'
 import EXIF from 'exif-js'
-import 'konva/src/Animation'
 import Konva from 'konva/src/Core'
+import 'konva/src/Animation'
 import 'konva/src/DragAndDrop'
 import 'konva/src/shapes/Circle'
 import 'konva/src/shapes/Image'
@@ -303,7 +303,7 @@ class Avatar extends React.Component {
         mimeType: this.props.exportMimeType,
         quality: this.props.exportQuality
       });
-    }
+        }
 
     const onScaleCallback = (scaleY) => {
       const scale = scaleY > 0 || isNotOutOfScale(scaleY) ? scaleY : 0;
