@@ -285,36 +285,25 @@ class Avatar extends React.Component {
     };
 
     const getPreview = () => {
-      if(this.props.exportAsSquare) {
-        const fullSizeImage = new Konva.Image({ image: this.image });
-        const xScale = fullSizeImage.width() / background.width();
-        const yScale = fullSizeImage.height() / background.height();
+      const fullSizeImage = new Konva.Image({ image: this.image });
+      const xScale = fullSizeImage.width() / background.width();
+      const yScale = fullSizeImage.height() / background.height();
 
-        const width = crop.radius() * 2 * xScale;
-        const height = crop.radius() * 2 * yScale;
+      const width = crop.radius() * 2 * xScale;
+      const height = crop.radius() * 2 * yScale;
 
-        const pixelRatio = this.props.exportSize ? this.props.exportSize / width : undefined;
+      const pixelRatio = this.props.exportSize ? this.props.exportSize / width : undefined;
 
-        return fullSizeImage.toDataURL({
-          x: (crop.x() - crop.radius()) * xScale,
-          y: (crop.y() - crop.radius())  * yScale,
-          width,
-          height,
-          pixelRatio,
-          mimeType: this.props.exportMimeType,
-          quality: this.props.exportQuality
-        });
-      } else {
-        return crop.toDataURL({
-          x: crop.x() - crop.radius(),
-          y: crop.y() - crop.radius(),
-          width: crop.radius() * 2,
-          height: crop.radius() * 2,
-          mimeType: this.props.exportMimeType,
-          quality: this.props.exportQuality
-        });
-      }
-    };
+      return fullSizeImage.toDataURL({
+        x: (crop.x() - crop.radius()) * xScale,
+        y: (crop.y() - crop.radius())  * yScale,
+        width,
+        height,
+        pixelRatio,
+        mimeType: this.props.exportMimeType,
+        quality: this.props.exportQuality
+      });
+    }
 
     const onScaleCallback = (scaleY) => {
       const scale = scaleY > 0 || isNotOutOfScale(scaleY) ? scaleY : 0;
